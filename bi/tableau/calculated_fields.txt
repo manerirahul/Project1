@@ -1,0 +1,92 @@
+// ============================================================
+// TABLEAU - CALCULATED FIELDS
+// Datasource: vw_fact_enriched (one row per pizza line item, already
+// joined to date, time and product - so Tableau needs no joins).
+// Create each field via Analysis > Create Calculated Field.
+// ============================================================
+
+// ---------- Core aggregates ----------
+// Name: Revenue
+SUM([Total Price])
+
+// Name: Pizzas Sold
+SUM([Quantity])
+
+// Name: Orders
+COUNTD([Order Id])
+
+// Name: Average Order Value
+SUM([Total Price]) / COUNTD([Order Id])
+
+// Name: Pizzas per Order
+SUM([Quantity]) / COUNTD([Order Id])
+
+// Name: Average Unit Price
+SUM([Total Price]) / SUM([Quantity])
+
+// Name: Trading Days
+COUNTD([Order Date])
+
+// Name: Revenue per Trading Day
+SUM([Total Price]) / COUNTD([Order Date])
+
+
+// ---------- Level of detail: order-grain metrics from a line-grain table ----------
+// Name: Order Basket Value  (LOD - avoids inflating AOV when filtering)
+{ FIXED [Order Id] : SUM([Total Price]) }
+
+// Name: Average Basket Value
+AVG({ FIXED [Order Id] : SUM([Total Price]) })
+
+// Name: Multi-Item Order
+IF { FIXED [Order Id] : SUM([Quantity]) } > 1 THEN "Multi-item" ELSE "Single item" END
+
+
+// ---------- Contribution and Pareto ----------
+// Name: Revenue % of Total  (table calc - set Compute Using = Pizza Name)
+SUM([Total Price]) / TOTAL(SUM([Total Price]))
+
+// Name: Pareto Cumulative %  (table calc)
+RUNNING_SUM(SUM([Total Price])) / TOTAL(SUM([Total Price]))
+
+// Name: Pareto Band
+IF [Pareto Cumulative %] <= 0.8 THEN "A - top 80% of revenue"
+ELSEIF [Pareto Cumulative %] <= 0.95 THEN "B - next 15%"
+ELSE "C - tail" END
+
+
+// ---------- Time ----------
+// Name: Day Part  (already a column in the view; use this only if reading raw tables)
+IF [Hour Of Day] < 11 THEN "Pre-Opening"
+ELSEIF [Hour Of Day] <= 13 THEN "Lunch"
+ELSEIF [Hour Of Day] <= 16 THEN "Afternoon"
+ELSEIF [Hour Of Day] <= 20 THEN "Dinner"
+ELSE "Late Night" END
+
+// Name: Revenue MoM %
+(ZN(SUM([Total Price])) - LOOKUP(ZN(SUM([Total Price])), -1))
+/ ABS(LOOKUP(ZN(SUM([Total Price])), -1))
+
+// Name: Revenue 7D Moving Average
+WINDOW_AVG(SUM([Total Price]), -6, 0)
+
+
+// ---------- Parameter-driven metric switch ----------
+// Create a String parameter named "Metric" with values:
+//   Revenue | Orders | Pizzas Sold | Average Order Value
+// Name: Selected Metric
+CASE [Metric]
+  WHEN "Revenue"             THEN SUM([Total Price])
+  WHEN "Orders"              THEN COUNTD([Order Id])
+  WHEN "Pizzas Sold"         THEN SUM([Quantity])
+  WHEN "Average Order Value" THEN SUM([Total Price]) / COUNTD([Order Id])
+END
+
+// Name: Selected Metric Label
+[Metric]
+
+
+// ---------- Ranking control ----------
+// Create an Integer parameter "Top N" (1-20, default 10)
+// Name: Top N Filter  (put on Filters, keep True; Compute Using = Pizza Name)
+RANK(SUM([Total Price])) <= [Top N]

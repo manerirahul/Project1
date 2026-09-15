@@ -1,0 +1,66 @@
+ingredient_key,ingredient_name,is_cheese
+1,?Duja Salami,False
+2,Alfredo Sauce,False
+3,Anchovies,False
+4,Artichoke,False
+5,Artichokes,False
+6,Arugula,False
+7,Asiago Cheese,True
+8,Bacon,False
+9,Barbecue Sauce,False
+10,Barbecued Chicken,False
+11,Beef Chuck Roast,False
+12,Blue Cheese,True
+13,Brie Carre Cheese,True
+14,Calabrese Salami,False
+15,Capocollo,False
+16,Caramelized Onions,False
+17,Chicken,False
+18,Chipotle Sauce,False
+19,Chorizo Sausage,False
+20,Cilantro,False
+21,Coarse Sicilian Salami,False
+22,Corn,False
+23,Eggplant,False
+24,Feta Cheese,True
+25,Fontina Cheese,True
+26,Friggitello Peppers,False
+27,Garlic,False
+28,Genoa Salami,False
+29,Goat Cheese,True
+30,Gorgonzola Piccante Cheese,True
+31,Gouda Cheese,True
+32,Green Olives,False
+33,Green Peppers,False
+34,Italian Sausage,False
+35,Jalapeno Peppers,False
+36,Kalamata Olives,False
+37,Luganega Sausage,False
+38,Mozzarella Cheese,True
+39,Mushrooms,False
+40,Onions,False
+41,Oregano,False
+42,Pancetta,False
+43,Parmigiano Reggiano Cheese,True
+44,Pears,False
+45,Peperoncini Verdi,False
+46,Pepperoni,False
+47,Pesto Sauce,False
+48,Pineapple,False
+49,Plum Tomatoes,False
+50,Prosciutto,False
+51,Prosciutto Di San Daniele,False
+52,Provolone Cheese,True
+53,Red Onions,False
+54,Red Peppers,False
+55,Ricotta Cheese,True
+56,Romano Cheese,True
+57,Sliced Ham,False
+58,Smoked Gouda Cheese,True
+59,Soppressata Salami,False
+60,Spinach,False
+61,Sun-Dried Tomatoes,False
+62,Thai Sweet Chilli Sauce,False
+63,Thyme,False
+64,Tomatoes,False
+65,Zucchini,False

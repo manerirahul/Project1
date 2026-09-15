@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pizza Sales Analytics — End-to-End BA Case Study</title>
+<meta name="description" content="End-to-end business analytics project: 48,620 transaction lines cleaned, modelled into a Kimball star schema, hosted on managed PostgreSQL, and reported through Power BI and Tableau." />
+<style>
+  :root{
+    --bg:#0b0f17; --surface:#141a26; --surface-2:#1b2330; --line:#26303f;
+    --ink:#e8edf5; --ink-2:#9aa8bd; --accent:#f97316; --accent-2:#fdba74;
+    --ok:#10b981; --warn:#ef4444;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",Inter,system-ui,-apple-system,sans-serif;line-height:1.6}
+  a{color:var(--accent-2)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  header{border-bottom:1px solid var(--line);
+    background:radial-gradient(1200px 400px at 15% -10%,rgba(249,115,22,.22),transparent 70%)}
+  .hero{padding:72px 0 56px}
+  .eyebrow{font:600 12px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 16px}
+  h1{font-size:clamp(32px,5vw,54px);line-height:1.08;letter-spacing:-.02em;margin:0 0 18px;font-weight:700}
+  .lede{font-size:19px;color:var(--ink-2);max-width:70ch;margin:0 0 28px}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 28px;padding:0;list-style:none}
+  .pills li{font:600 12px/1 var(--mono);padding:8px 12px;border:1px solid var(--line);
+    border-radius:999px;background:var(--surface);color:var(--ink-2);white-space:nowrap}
+  .cta{display:flex;flex-wrap:wrap;gap:12px}
+  .btn{display:inline-block;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px}
+  .btn-a{background:var(--accent);color:#1b1005}
+  .btn-b{border:1px solid var(--line);color:var(--ink);background:var(--surface)}
+  section{padding:56px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:26px;letter-spacing:-.01em;margin:0 0 8px}
+  h3{font-size:17px;margin:0 0 6px}
+  .sub{color:var(--ink-2);margin:0 0 28px;max-width:75ch}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .kpi .v{font:700 28px/1.1 "Segoe UI",sans-serif;letter-spacing:-.02em}
+  .kpi .l{font:600 11px/1.4 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-top:8px}
+  .flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+  .step{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:10px;padding:18px}
+  .step .n{font:700 12px/1 var(--mono);color:var(--accent);letter-spacing:.14em;margin-bottom:10px}
+  .step p{margin:6px 0 0;color:var(--ink-2);font-size:14px}
+  .step code{font-family:var(--mono);font-size:12.5px;color:var(--accent-2)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px}
+  .card .so{margin:12px 0 0;padding-top:12px;border-top:1px dashed var(--line);font-size:14px;color:var(--ink-2)}
+  .card .so b{color:var(--ok)}
+  figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  figure img{display:block;width:100%;height:auto;background:#fff}
+  figcaption{padding:14px 18px;font-size:13.5px;color:var(--ink-2);border-top:1px solid var(--line)}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font:600 11px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+  td code{font-family:var(--mono);font-size:12.5px;color:var(--accent-2)}
+  pre{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;
+    font-family:var(--mono);font-size:13px;color:var(--ink)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .note{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:16px 18px;font-size:14.5px;color:var(--ink-2)}
+  footer{padding:44px 0;color:var(--ink-2);font-size:14px}
+  @media (max-width:760px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hero">
+    <p class="eyebrow">Business Analytics · End-to-End Case Study</p>
+    <h1>Pizza Sales Analytics</h1>
+    <p class="lede">48,620 transaction lines taken from a raw CSV to a governed, cloud-hosted
+      dimensional warehouse and two production dashboards — with the business logic held in SQL
+      so Power BI and Tableau can never report different numbers.</p>
+    <ul class="pills">
+      <li>Python</li><li>pandas</li><li>PostgreSQL</li><li>Kimball star schema</li>
+      <li>SQL window functions</li><li>Power BI / DAX</li><li>Tableau / LOD</li>
+      <li>Data quality gate</li><li>Market-basket analysis</li>
+    </ul>
+    <div class="cta">
+      <a class="btn btn-a" href="../README.md">Read the repo</a>
+      <a class="btn btn-b" href="../docs/PROJECT_WALKTHROUGH.md">Full walkthrough</a>
+      <a class="btn btn-b" href="TABLEAU_PUBLIC_URL">Live Tableau dashboard</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>The numbers behind the case</h2>
+    <p class="sub">Every figure on this page is produced by the pipeline and traceable to a
+      view in <code>sql/02_views.sql</code>. Nothing is typed by hand.</p>
+    <div class="kpis">
+      <div class="kpi"><div class="v">$817,860</div><div class="l">Revenue (FY2015)</div></div>
+      <div class="kpi"><div class="v">21,350</div><div class="l">Orders</div></div>
+      <div class="kpi"><div class="v">49,574</div><div class="l">Pizzas sold</div></div>
+      <div class="kpi"><div class="v">$38.31</div><div class="l">Avg order value</div></div>
+      <div class="kpi"><div class="v">2.32</div><div class="l">Pizzas per order</div></div>
+      <div class="kpi"><div class="v">48,620</div><div class="l">Fact rows loaded</div></div>
+      <div class="kpi"><div class="v">0</div><div class="l">Rows rejected</div></div>
+      <div class="kpi"><div class="v">14 / 14</div><div class="l">Quality checks passed</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>How the project runs, end to end</h2>
+    <p class="sub">Five stages, each an independent script, chained by one <code>make all</code>.
+      The gate in stage 3 exits non-zero on failure, so a bad load can never reach the dashboards.</p>
+    <div class="flow">
+      <div class="step"><div class="n">STAGE 01</div><h3>Profile</h3>
+        <p>Column types, ranges, nulls, duplicates, referential consistency, price reconciliation.</p>
+        <p><code>src/profile_data.py</code></p></div>
+      <div class="step"><div class="n">STAGE 02</div><h3>Clean &amp; model</h3>
+        <p>Parses dates and times, standardises sizes, splits the recipe text, quarantines bad rows,
+          builds a star schema with surrogate keys.</p>
+        <p><code>src/transform.py</code></p></div>
+      <div class="step"><div class="n">STAGE 03</div><h3>Quality gate</h3>
+        <p>14 assertions — row counts, key integrity, revenue reconciliation, calendar continuity,
+          duplicate grain. CI-ready.</p>
+        <p><code>src/data_quality.py</code></p></div>
+      <div class="step"><div class="n">STAGE 04</div><h3>Load</h3>
+        <p>Idempotent, single-transaction load into managed PostgreSQL, chunked, with post-load
+          row-count verification.</p>
+        <p><code>src/load_to_postgres.py</code></p></div>
+      <div class="step"><div class="n">STAGE 05</div><h3>Analyse &amp; report</h3>
+        <p>Reads the SQL views, renders charts, writes the insight memo in
+          number → so-what → action form.</p>
+        <p><code>src/analysis.py</code></p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Data model</h2>
+    <p class="sub">Kimball dimensional design at line-item grain. The recipe is a genuine
+      many-to-many, so it is resolved with a bridge rather than flattened into a delimited string.</p>
+<pre>                 dim_date (365)            dim_time (24, day parts)
+                      |                            |
+                      +------------+---------------+
+                                   |
+      dim_pizza (91) ------  fact_order_items (48,620)
+        product x size              one row per pizza line item
+             |                      quantity, unit price, total price,
+             |                      order-level stats, price_variance_flag
+             |
+   bridge_pizza_ingredient (518)
+             |
+      dim_ingredient (65)</pre>
+    <div class="two" style="margin-top:24px">
+      <div>
+        <h3>Why the logic lives in SQL</h3>
+        <p class="sub" style="margin-bottom:0">12 <code>security_invoker</code> views hold every
+          definition — KPIs, ABC classification, the weekday × hour demand matrix, and a self-join
+          market-basket calculation returning support, confidence and lift. Both BI tools read the
+          same views, so a reviewer cannot find two versions of "revenue".</p>
+      </div>
+      <div>
+        <h3>Governance</h3>
+        <p class="sub" style="margin-bottom:0">Row-level security enabled on all six tables,
+          read-only grants for reporting roles, credentials read from environment variables only,
+          and rejected rows written to <code>rejected_rows.csv</code> with the reason attached
+          rather than silently dropped.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>What the analysis found</h2>
+    <p class="sub">Six findings, each written as a decision rather than an observation.</p>
+    <div class="cards">
+      <div class="card"><h3>1. Demand sits in two narrow windows</h3>
+        <p>Lunch and dinner carry <b>68.3%</b> of all orders; the single busiest hour is 12:00 with 2,520 orders.</p>
+        <p class="so"><b>Action:</b> roster to the hourly curve instead of flat shifts, and pre-prep A-class products before 11:00.</p></div>
+      <div class="card"><h3>2. The weekly rhythm is plannable</h3>
+        <p>Friday averages $2,721 a day against Sunday's $1,908 — a 43% spread that repeats all year.</p>
+        <p class="so"><b>Action:</b> move promotions onto the two weakest weekdays and protect margin on peak days.</p></div>
+      <div class="card"><h3>3. The baseline is mature</h3>
+        <p>Month-over-month revenue never moves more than 9.9%; July peaks at $72,558, October troughs at $64,028.</p>
+        <p class="so"><b>Action:</b> stop chasing footfall; growth has to come from basket size and mix.</p></div>
+      <div class="card"><h3>4. A clear Pareto pattern</h3>
+        <p>21 of 32 products drive the first 80% of revenue. Four C-class items return 6.9% while occupying menu and prep capacity.</p>
+        <p class="so"><b>Action:</b> menu-rationalisation review on the C-class tail.</p></div>
+      <div class="card"><h3>5. Size beats category</h3>
+        <p>Categories sit within 3.2 points of each other, but large alone drives <b>45.89%</b> of revenue.</p>
+        <p class="so"><b>Action:</b> make upsizing the default prompt at order entry — the price step is incremental margin on identical prep time.</p></div>
+      <div class="card"><h3>6. Basket size is the untapped lever</h3>
+        <p><b>38.0%</b> of orders contain a single pizza. Affinity pairs with lift above 1 are listed in <code>vw_product_affinity</code>.</p>
+        <p class="so"><b>Action:</b> surface the top affinity pairs as checkout add-ons; converting 10% of single-pizza orders is a mid-single-digit revenue gain.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Selected outputs</h2>
+    <p class="sub">Rendered by <code>src/analysis.py</code> straight from the warehouse views.</p>
+    <div class="gallery">
+      <figure><img src="../reports/chart_monthly_revenue.png" alt="Monthly revenue for 2015 showing a flat baseline between $64k and $73k" />
+        <figcaption>Monthly revenue — a flat, mature baseline.</figcaption></figure>
+      <figure><img src="../reports/chart_hourly_orders.png" alt="Orders by hour of day with peaks at noon and 6pm" />
+        <figcaption>Hourly demand — the staffing curve.</figcaption></figure>
+      <figure><img src="../reports/chart_top_products.png" alt="Top products by revenue led by Thai Chicken" />
+        <figcaption>Top products by revenue.</figcaption></figure>
+      <figure><img src="../reports/chart_category_size_mix.png" alt="Revenue split by category and pizza size" />
+        <figcaption>Category versus size mix — size is the lever.</figcaption></figure>
+      <figure><img src="../reports/chart_daily_trend.png" alt="Daily revenue with a seven day moving average" />
+        <figcaption>Daily revenue with a 7-day moving average.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Reproduce it in four commands</h2>
+    <pre>cp .env.example .env        # fill in the five PostgreSQL values
+pip install -r requirements.txt
+make all                    # profile -> transform -> quality gate -> load -> analysis
+open reports/insights.md</pre>
+    <div class="note" style="margin-top:18px">
+      <strong>Hosting:</strong> managed PostgreSQL on a permanently free tier — no card, no
+      subscription. Options considered and rejected (CSV on disk, SQLite, Google Sheets, MySQL,
+      Snowflake trials) are written up with reasoning in <code>docs/HOSTING_GUIDE.md</code>, along
+      with the exact provisioning steps and the pooled connection string both BI tools need.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Repository map</h2>
+    <table>
+      <tr><th>Path</th><th>What it is</th></tr>
+      <tr><td><code>data/raw/pizza_sales.csv</code></td><td>The untouched source, tracked so results are reproducible</td></tr>
+      <tr><td><code>src/</code></td><td>Six Python modules — config, profile, transform, quality, load, analysis</td></tr>
+      <tr><td><code>sql/01_schema.sql</code></td><td>DDL, indexes, row-level security, grants</td></tr>
+      <tr><td><code>sql/02_views.sql</code></td><td>12 reporting views — the semantic layer both BI tools read</td></tr>
+      <tr><td><code>sql/03_kpi_queries.sql</code></td><td>13 standalone analyst queries for ad-hoc questions</td></tr>
+      <tr><td><code>bi/powerbi/</code></td><td>Power Query M, 27 DAX measures, 4-page report spec, saved <code>.pbix</code></td></tr>
+      <tr><td><code>bi/tableau/</code></td><td><code>.tds</code> datasource, calculated fields and LODs, 3-dashboard spec, saved <code>.twbx</code></td></tr>
+      <tr><td><code>docs/</code></td><td>Hosting guide, Power BI guide, Tableau guide, data dictionary, walkthrough</td></tr>
+      <tr><td><code>reports/</code></td><td>Profile report, quality report, charts, insight memo</td></tr>
+      <tr><td><code>portfolio/index.html</code></td><td>This page — the presentation layer for the case study</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Scope discipline</h2>
+    <p class="sub">Stated up front, because a reviewer will ask.</p>
+    <p class="sub">The source carries no cost, margin, store, channel or customer identifier, so
+      profitability and retention are out of scope and every recommendation is framed on revenue and
+      mix. The vegetarian flag is derived by matching meat terms in the recipe text — an analytical
+      convenience, not a certified dietary claim. Affinity is computed at product level ignoring
+      size, which is the correct grain for a cross-sell prompt. Seven of 365 days recorded no sales
+      and are flagged for confirmation as planned closures rather than assumed to be missing data.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Prepared by <strong>Rahul Maneri</strong> · Business Analyst ·
+    replace <code>TABLEAU_PUBLIC_URL</code> above with your published dashboard link,
+    and add your GitHub repository URL here before sharing.
+  </div>
+</footer>
+
+</body>
+</html>

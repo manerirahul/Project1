@@ -1,0 +1,95 @@
+// ============================================================
+// POWER BI - DAX MEASURES
+// Create one measure table: Home > Enter data > name it "_Measures",
+// then add each measure below to it.
+// Naming: business language, no technical suffixes.
+// ============================================================
+
+// ---------- Core ----------
+Revenue = SUM ( fact_order_items[total_price] )
+
+Pizzas Sold = SUM ( fact_order_items[quantity] )
+
+Orders = DISTINCTCOUNT ( fact_order_items[order_id] )
+
+Average Order Value = DIVIDE ( [Revenue], [Orders] )
+
+Pizzas per Order = DIVIDE ( [Pizzas Sold], [Orders] )
+
+Average Unit Price = DIVIDE ( [Revenue], [Pizzas Sold] )
+
+Trading Days = CALCULATE ( DISTINCTCOUNT ( fact_order_items[date_key] ) )
+
+Revenue per Trading Day = DIVIDE ( [Revenue], [Trading Days] )
+
+Orders per Trading Day = DIVIDE ( [Orders], [Trading Days] )
+
+
+// ---------- Time intelligence (needs dim_date marked as date table) ----------
+Revenue PM =
+CALCULATE ( [Revenue], DATEADD ( dim_date[date], -1, MONTH ) )
+
+Revenue MoM % =
+VAR Curr = [Revenue]
+VAR Prev = [Revenue PM]
+RETURN DIVIDE ( Curr - Prev, Prev )
+
+Revenue YTD =
+TOTALYTD ( [Revenue], dim_date[date] )
+
+Revenue 7D Moving Average =
+AVERAGEX (
+    DATESINPERIOD ( dim_date[date], MAX ( dim_date[date] ), -7, DAY ),
+    [Revenue]
+)
+
+
+// ---------- Contribution / ranking ----------
+Revenue % of Total =
+DIVIDE ( [Revenue], CALCULATE ( [Revenue], ALLSELECTED () ) )
+
+Revenue Rank =
+RANKX ( ALLSELECTED ( dim_pizza[pizza_name] ), [Revenue], , DESC, DENSE )
+
+Revenue Running Total =
+VAR Ranked = [Revenue Rank]
+RETURN
+SUMX (
+    FILTER (
+        ADDCOLUMNS ( ALLSELECTED ( dim_pizza[pizza_name] ), "@r", [Revenue Rank] ),
+        [@r] <= Ranked
+    ),
+    [Revenue]
+)
+
+Pareto % =
+DIVIDE ( [Revenue Running Total], CALCULATE ( [Revenue], ALLSELECTED () ) )
+
+
+// ---------- Peak / concentration ----------
+Peak Hour Orders = MAXX ( VALUES ( dim_time[hour_of_day] ), [Orders] )
+
+Peak Trading Windows % =
+DIVIDE (
+    CALCULATE ( [Orders], dim_time[day_part] IN { "Lunch", "Dinner" } ),
+    CALCULATE ( [Orders], ALL ( dim_time ) )
+)
+
+
+// ---------- Basket / affinity ----------
+Attach Rate =
+DIVIDE (
+    [Orders],
+    CALCULATE ( [Orders], ALL ( dim_pizza ) )
+)
+
+Affinity Lift = AVERAGE ( vw_product_affinity[lift] )
+
+Affinity Confidence = AVERAGE ( vw_product_affinity[confidence] )
+
+
+// ---------- Quality / trust indicator ----------
+Price Variance Rows = CALCULATE ( COUNTROWS ( fact_order_items ), fact_order_items[price_variance_flag] = TRUE )
+
+Data Trust Label =
+IF ( [Price Variance Rows] = 0, "All rows reconciled", "Review " & [Price Variance Rows] & " rows" )

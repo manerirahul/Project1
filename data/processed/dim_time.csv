@@ -1,0 +1,25 @@
+time_key,hour_24,hour_label,hour_12,day_part,is_peak_window
+0,0,00:00,12 AM,Pre-Opening,False
+1,1,01:00,1 AM,Pre-Opening,False
+2,2,02:00,2 AM,Pre-Opening,False
+3,3,03:00,3 AM,Pre-Opening,False
+4,4,04:00,4 AM,Pre-Opening,False
+5,5,05:00,5 AM,Pre-Opening,False
+6,6,06:00,6 AM,Pre-Opening,False
+7,7,07:00,7 AM,Pre-Opening,False
+8,8,08:00,8 AM,Pre-Opening,False
+9,9,09:00,9 AM,Pre-Opening,False
+10,10,10:00,10 AM,Pre-Opening,False
+11,11,11:00,11 AM,Lunch,True
+12,12,12:00,12 PM,Lunch,True
+13,13,13:00,1 PM,Lunch,True
+14,14,14:00,2 PM,Afternoon,False
+15,15,15:00,3 PM,Afternoon,False
+16,16,16:00,4 PM,Afternoon,False
+17,17,17:00,5 PM,Dinner,True
+18,18,18:00,6 PM,Dinner,True
+19,19,19:00,7 PM,Dinner,True
+20,20,20:00,8 PM,Dinner,True
+21,21,21:00,9 PM,Late Night,False
+22,22,22:00,10 PM,Late Night,False
+23,23,23:00,11 PM,Late Night,False

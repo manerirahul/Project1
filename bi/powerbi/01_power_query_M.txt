@@ -1,0 +1,92 @@
+/* ============================================================
+   POWER BI - POWER QUERY (M) SCRIPTS
+   Pizza Sales Analytics warehouse (PostgreSQL)
+   ------------------------------------------------------------
+   HOW TO USE
+   1. Power BI Desktop > Home > Transform data > Advanced Editor
+   2. New blank query for each block below, paste, rename the query
+      to the name in the comment header.
+   3. Set the two parameters first (Home > Manage Parameters):
+        PG_Server   Text   e.g. aws-0-eu-central-1.pooler.supabase.com:5432
+        PG_Database Text   postgres
+   4. Credentials: Database, user postgres.<project_ref>, your password,
+      Encryption = enabled (Supabase requires SSL).
+   5. Storage mode: Import (fastest, refresh on a schedule).
+   ============================================================ */
+
+
+/* ---------- Query name: fact_order_items ---------- */
+let
+    Source = PostgreSQL.Database(PG_Server, PG_Database),
+    Data   = Source{[Schema="public", Item="fact_order_items"]}[Data]
+in
+    Data
+
+
+/* ---------- Query name: dim_date ---------- */
+let
+    Source = PostgreSQL.Database(PG_Server, PG_Database),
+    Data   = Source{[Schema="public", Item="dim_date"]}[Data]
+in
+    Data
+
+
+/* ---------- Query name: dim_time ---------- */
+let
+    Source = PostgreSQL.Database(PG_Server, PG_Database),
+    Data   = Source{[Schema="public", Item="dim_time"]}[Data]
+in
+    Data
+
+
+/* ---------- Query name: dim_pizza ---------- */
+let
+    Source = PostgreSQL.Database(PG_Server, PG_Database),
+    Data   = Source{[Schema="public", Item="dim_pizza"]}[Data]
+in
+    Data
+
+
+/* ---------- Query name: dim_ingredient ---------- */
+let
+    Source = PostgreSQL.Database(PG_Server, PG_Database),
+    Data   = Source{[Schema="public", Item="dim_ingredient"]}[Data]
+in
+    Data
+
+
+/* ---------- Query name: bridge_pizza_ingredient ---------- */
+let
+    Source = PostgreSQL.Database(PG_Server, PG_Database),
+    Data   = Source{[Schema="public", Item="bridge_pizza_ingredient"]}[Data]
+in
+    Data
+
+
+/* ---------- Query name: vw_product_affinity  (analysis page) ---------- */
+let
+    Source = PostgreSQL.Database(PG_Server, PG_Database),
+    Data   = Source{[Schema="public", Item="vw_product_affinity"]}[Data]
+in
+    Data
+
+
+/* ---------- Query name: vw_product_performance  (ABC class) ---------- */
+let
+    Source = PostgreSQL.Database(PG_Server, PG_Database),
+    Data   = Source{[Schema="public", Item="vw_product_performance"]}[Data]
+in
+    Data
+
+
+/* ============================================================
+   MODEL RELATIONSHIPS to create after loading
+   (Model view > drag field to field, all single-direction, 1:*)
+     dim_date[date_key]        1 --> * fact_order_items[date_key]
+     dim_time[time_key]        1 --> * fact_order_items[time_key]
+     dim_pizza[pizza_key]      1 --> * fact_order_items[pizza_key]
+     dim_pizza[pizza_key]      1 --> * bridge_pizza_ingredient[pizza_key]
+     dim_ingredient[ingredient_key] 1 --> * bridge_pizza_ingredient[ingredient_key]
+   Mark dim_date as the date table (Table tools > Mark as date table > date).
+   Hide every *_key column from report view.
+   ============================================================ */

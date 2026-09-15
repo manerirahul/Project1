@@ -1,0 +1,14 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+# Generated artefacts. The raw source stays in the repo; derived data does not.
+data/processed/*.csv
+
+# BI working files - keep the .pbix/.twbx you publish, ignore local caches
+*.pbix.tmp
+*.twb.bak
